@@ -15,7 +15,8 @@
               "/rustc/5e1a799842ba6ed4a57e91f7ab9435947482f7d8": "${env:USERPROFILE}/.rustup/toolchains/stable-x86_64-pc-windows-msvc/lib/rustlib/src/rust"
             },
             "symbolSearchPath": "https://msdl.microsoft.com/download/symbols",
-            "environment": []
+            "environment": [],
+            "preLaunchTask": "build"
           }
     ]
 }

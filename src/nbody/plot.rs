@@ -4,14 +4,16 @@ use plotters::prelude::*;
 use std::process::Command;
 use crate::nbody::simulation::NBodySimulation2D;
 
-const COLORS: [RGBColor; 5] = [WHITE, YELLOW, RED, BLUE, GREEN];
+// const COLORS: [RGBColor; 5] = [WHITE, YELLOW, RED, BLUE, GREEN];
+const COLORS: [RGBColor; 2] = [WHITE, YELLOW];
 
 /// Creates a plot.
 pub fn create_plot(
         filename: &str,
         width: u32,
         height: u32,
-        sim: &NBodySimulation2D
+        sim: &NBodySimulation2D,
+        scale: f32
     ) -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Starting plot ({width}, {height}) at {filename}",
@@ -22,8 +24,8 @@ pub fn create_plot(
     root.fill(&BLACK)?;
     for i in 0..sim.n {
         root.draw(&Circle::new(
-            (sim.x[i] as i32, sim.y[i] as i32),
-            (sim.m[i].cbrt() / 20.0) as i32,
+            (sim.rx[i] as i32, sim.ry[i] as i32),
+            (sim.m[i].cbrt() / scale) as i32,
             Into::<ShapeStyle>::into(&COLORS[i % COLORS.len()]).filled(),
         ))?;
     }
@@ -37,7 +39,7 @@ pub fn compile_mp4() {
     let mut cmd = Command::new("ffmpeg");
     cmd.args(&[
             "-y",
-            "-r", "30",
+            "-r", "10",
             "-s", "500x500",
             "-i", "data/frames/img%04d.png",
             "-vcodec", "libx264",

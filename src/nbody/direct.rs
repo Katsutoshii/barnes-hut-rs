@@ -1,9 +1,7 @@
 //! Direct algorithm using all-pairs force accumulation
-use crate::nbody::{NBodySimulation2D};
+use crate::nbody::{NBodySimulation2D, EPSILON_SQRD};
 use std::f32;
 
-const EPSILON: f32 = 1e-3;
-const EPSILON_SQRD: f32 = EPSILON * EPSILON;
 
 /// Runs a single timestep of the simulation using the all-pairs calculation.
 pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
@@ -12,8 +10,8 @@ pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
         sim.ay[i] = 0.;
 
         for j in 0..sim.n {
-            let dx: f32 = sim.x[j] - sim.x[i];
-            let dy: f32 = sim.y[j] - sim.y[i];
+            let dx: f32 = sim.rx[j] - sim.rx[i];
+            let dy: f32 = sim.ry[j] - sim.ry[i];
             let d_sqrd: f32 = dx * dx + dy * dy;
             let inv_d_cubed: f32 = 1. / (d_sqrd + EPSILON_SQRD).powf(3.);
 
@@ -29,7 +27,7 @@ pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
         sim.vy[i] += sim.ay[i] * dt;
 
         // Update acceleration
-        sim.x[i] += sim.vx[i] * dt;
-        sim.y[i] += sim.vy[i] * dt;
+        sim.rx[i] += sim.vx[i] * dt;
+        sim.ry[i] += sim.vy[i] * dt;
     }
 }

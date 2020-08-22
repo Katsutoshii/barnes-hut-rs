@@ -1,4 +1,4 @@
-// All leaves will have either one or zero points.
+//! Quadtree that keeps track of centers of mass.
 use crate::quadtree::BoundingBox2D;
 
 fn l2(x1: f32, y1: f32, x2: f32, y2: f32) -> f32 {

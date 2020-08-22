@@ -1,8 +1,6 @@
-//! Module for plotting.
-
 use plotters::prelude::*;
-use std::process::Command;
-use crate::nbody::simulation::NBodySimulation2D;
+
+use crate::quadtree::{Quadtree};
 
 const COLORS: [RGBColor; 5] = [WHITE, YELLOW, RED, BLUE, GREEN];
 
@@ -30,20 +28,4 @@ pub fn create_plot(
 
     Ok(())
 }
-
-/// Compiles an MP4 from a directory of pngs.
-/// Example file format: `"data/frames/img%04d.png"`
-pub fn compile_mp4() {
-    let mut cmd = Command::new("ffmpeg");
-    cmd.args(&[
-            "-y",
-            "-r", "30",
-            "-s", "500x500",
-            "-i", "data/frames/img%04d.png",
-            "-vcodec", "libx264",
-            "-crf", "4",
-            "-pix_fmt", "yuv420p",
-            "data/videos/sim.mp4"
-        ]);
-    cmd.spawn().expect("Error");
-}
+#[test]

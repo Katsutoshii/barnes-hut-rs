@@ -4,7 +4,6 @@ use crate::nbody::bodies::{Body2D, Body3D};
 /// Class defining the simulation for 2D n-body problem.
 pub struct NBodySimulation2D {
     pub n: usize,
-    pub dt: f32,
     pub m: Vec<f32>,
     pub x: Vec<f32>,
     pub y: Vec<f32>,
@@ -15,12 +14,26 @@ pub struct NBodySimulation2D {
 }
 
 impl NBodySimulation2D {
+    /// Constructs and empty `NBodySimulation2D` with n uninitialized bodies.
+    pub fn empty(n: usize) -> Self {
+        let mut sim: Self = Self{
+            n,
+            m: Vec::with_capacity(n),
+            x: Vec::with_capacity(n),
+            y: Vec::with_capacity(n),
+            vx: Vec::with_capacity(n),
+            vy: Vec::with_capacity(n),
+            ax: Vec::with_capacity(n),
+            ay: Vec::with_capacity(n),
+        };
+        return sim;
+    }
+
     /// Constructs the `NBodySimulation2D` from a vector of bodies.
-    pub fn new(dt: f32, bodies: &Vec<Body2D>) -> Self {
+    pub fn new(bodies: &Vec<Body2D>) -> Self {
         let n: usize = bodies.len();
         let mut sim: Self = Self{
             n,
-            dt,
             m: Vec::with_capacity(n),
             x: Vec::with_capacity(n),
             y: Vec::with_capacity(n),
@@ -45,7 +58,6 @@ impl NBodySimulation2D {
 /// Class defining the simulation for 2D n-body problem.
 pub struct NBodySimulation3D {
     pub n: usize,
-    pub dt: f32,
     pub m: Vec<f32>,
     pub x: Vec<f32>,
     pub y: Vec<f32>,
@@ -64,7 +76,6 @@ impl NBodySimulation3D {
         let n: usize = bodies.len();
         let mut sim: Self = Self{
             n,
-            dt,
             m: Vec::with_capacity(n),
             x: Vec::with_capacity(n),
             y: Vec::with_capacity(n),

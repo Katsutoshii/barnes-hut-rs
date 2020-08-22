@@ -3,8 +3,15 @@ use std::fs;
 use std::fmt::Debug;
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct BodyPosition3D {
+    pub m: Vec<f32>,
+    pub x: Vec<f32>,
+    pub y: Vec<f32>,
+    pub z: Vec<f32>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Body3D {
-    pub name: String,
     pub m: f32,
     pub x: f32,
     pub y: f32,
@@ -15,8 +22,14 @@ pub struct Body3D {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct BodyPosition2D {
+    pub m: Vec<f32>,
+    pub x: Vec<f32>,
+    pub y: Vec<f32>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Body2D {
-    pub name: String,
     pub m: f32,
     pub x: f32,
     pub y: f32,

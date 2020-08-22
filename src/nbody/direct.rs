@@ -6,7 +6,7 @@ const EPSILON: f32 = 1e-3;
 const EPSILON_SQRD: f32 = EPSILON * EPSILON;
 
 /// Runs a single timestep of the simulation using the all-pairs calculation.
-pub fn nbody_direct_2d(sim: &mut NBodySimulation2D) {
+pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
     for i in 0..sim.n {
         sim.ax[i] = 0.;
         sim.ay[i] = 0.;
@@ -25,11 +25,11 @@ pub fn nbody_direct_2d(sim: &mut NBodySimulation2D) {
     // Integrate over time
     for i in 0..sim.n {
         // Update velocities
-        sim.vx[i] += sim.ax[i] * sim.dt;
-        sim.vy[i] += sim.ay[i] * sim.dt;
+        sim.vx[i] += sim.ax[i] * dt;
+        sim.vy[i] += sim.ay[i] * dt;
 
         // Update acceleration
-        sim.x[i] += sim.vx[i] * sim.dt;
-        sim.y[i] += sim.vy[i] * sim.dt;
+        sim.x[i] += sim.vx[i] * dt;
+        sim.y[i] += sim.vy[i] * dt;
     }
 }

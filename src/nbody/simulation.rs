@@ -4,8 +4,10 @@ use crate::nbody::bodies::{Body2D, Body3D};
 // Constants
 // pub const EPSILON: f32 = 2e-2;
 // pub const EPSILON_SQRD: f32 = EPSILON * EPSILON;
-pub const MIN_DIST: f32 = 10.;
+pub const MIN_DIST: f32 = 12.;
 pub const MIN_DIST_SQRD: f32 = MIN_DIST * MIN_DIST;
+pub const WIDTH: u32 = 500;
+pub const HEIGHT: u32 = 500;
 
 /// Class defining the simulation for 2D n-body problem.
 pub struct NBodySimulation2D {
@@ -62,6 +64,31 @@ impl NBodySimulation2D {
         self.vy.push(body.vy);
         self.ax.push(0.);
         self.ay.push(0.);
+    }
+
+    pub fn set(&mut self, i: usize, body: &Body2D) {
+        self.m[i] = body.m;
+        self.rx[i] = body.rx;
+        self.ry[i] = body.ry;
+        self.vx[i] = body.vx;
+        self.vy[i] = body.vy;
+        self.ax[i] = 0.;
+        self.ay[i] = 0.;
+    }
+
+    pub fn integrate(&mut self, dt: f32) {
+        // Integrate over time
+        for i in 0..self.n {
+            // println!("a = ({}, {})", self.ax[i], self.ay[i]);
+
+            // Update velocities
+            self.vx[i] += self.ax[i] * dt;
+            self.vy[i] += self.ay[i] * dt;
+
+            // Update acceleration
+            self.rx[i] += self.vx[i] * dt;
+            self.ry[i] += self.vy[i] * dt;
+        }
     }
 }
 

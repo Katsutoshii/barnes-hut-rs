@@ -30,6 +30,7 @@ impl MassQuadtree2D {
     pub fn new(x: &Vec<f32>, y: &Vec<f32>, m: &Vec<f32>, bb: BoundingBox2D) -> Self {
         let mut root = Self::empty();
         for i in 0..x.len() {
+            // println!();
             root.insert(x[i], y[i], m[i], bb);
         }
         root
@@ -50,24 +51,24 @@ impl MassQuadtree2D {
             self.x = x;
             self.y = y;
             self.m = m;
-            println!("Free node found, inserted ({}, {}) into {:?}", x, y, bb);
+            // println!("Free node found, inserted ({}, {}) into {:?}", x, y, bb);
             return;
         }
 
         // Otherwise, insert the existing node and the new node under this parent.
         let cx: f32 = bb.cx();
         let cy: f32 = bb.cy();
-        let mut points: Vec<(f32, f32)> = vec![(x, y)];
+        let mut points: Vec<(f32, f32, f32)> = vec![(x, y, m)];
         if self.is_leaf() {
-            points.push((self.x, self.y));
+            points.push((self.x, self.y, self.m));
         }
 
-        for &(x, y) in points.iter() {
+        for &(x, y, m) in points.iter() {
             // Find the child and insert into it
             let x_bit = (x >= cx) as usize;
             let y_bit = (y >= cy) as usize;
             let quadrant: usize = x_bit + (y_bit << 1);
-            println!("Inserting ({}, {}) into {:?}...", x, y, bb.child(quadrant));
+            // println!("Inserting ({}, {}, {}) into {:?}...", x, y, m, bb.child(quadrant));
 
             if self.children[quadrant].is_none() {
                 self.children[quadrant] = Some(Box::new(Self::empty()));
@@ -133,10 +134,10 @@ impl<'a> Iterator for MassQuadtree2DIterator<'a> {
             let s: f32 = bb.width();
             if s / d < self.theta || node.is_leaf() {
                 if node.is_leaf() {
-                    println!("Leaf node: ({}, {})", node.x, node.y);
+                    // println!("Leaf node: ({}, {})", node.x, node.y);
                 } else {
-                    println!("Node far enough away (s/d={}): ({}, {}) - ({}, {})",
-                    s / d, node.x, node.y, self.x, self.y);
+                    // println!("Node far enough away (s/d={}): ({}, {}) - ({}, {})",
+                    //     s / d, node.x, node.y, self.x, self.y);
                 }
                 return Some(node);
             }

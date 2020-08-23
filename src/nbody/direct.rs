@@ -24,14 +24,5 @@ pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
         }
     }
 
-    // Integrate over time
-    for i in 0..sim.n {
-        // Update velocities
-        sim.vx[i] += sim.ax[i] * dt;
-        sim.vy[i] += sim.ay[i] * dt;
-
-        // Update acceleration
-        sim.rx[i] += sim.vx[i] * dt;
-        sim.ry[i] += sim.vy[i] * dt;
-    }
+    sim.integrate(dt);
 }

@@ -17,12 +17,12 @@ const HEIGHT: u32 = 500;
 fn run_direct(sim: &mut NBodySimulation2D, steps: u32, scale: f32) {
     for i in 0..steps {
         let img_filename: &str = &*format!("data/frames/img{:04}.png", i);
-        let res: Result<(), Box<dyn std::error::Error>> = create_plot(
-            img_filename, WIDTH, HEIGHT, &sim, scale);
-        match res {
-            Ok(v) => v,
-            Err(e) => println!("Error: {:?}", e),
-        }
+        // let res: Result<(), Box<dyn std::error::Error>> = create_plot(
+        //     img_filename, WIDTH, HEIGHT, &sim, scale);
+        // match res {
+        //     Ok(v) => v,
+        //     Err(e) => println!("Error: {:?}", e),
+        // }
         nbody_direct_2d(sim, 2.0);
     }
 
@@ -37,8 +37,8 @@ fn run_direct_2d_test(steps: u32) {
 }
 
 fn run_direct_2d_galaxy(steps: u32) {
-    let mut sim: NBodySimulation2D = generate_galaxy(500);
-    run_direct(&mut sim, steps, 30.);
+    let mut sim: NBodySimulation2D = generate_galaxy(5000);
+    run_direct(&mut sim, steps, 20.);
 }
 
 fn run_barnes_hut() {
@@ -60,5 +60,5 @@ fn run_barnes_hut() {
 fn main(){
     // run_barnes_hut();
     // run_direct_2d_test(10);
-    run_direct_2d_galaxy(50);
+    run_direct_2d_galaxy(200);
 }

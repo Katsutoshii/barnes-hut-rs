@@ -39,7 +39,7 @@ pub fn compile_mp4() {
     let mut cmd = Command::new("ffmpeg");
     cmd.args(&[
             "-y",
-            "-r", "10",
+            "-r", "20",
             "-s", "500x500",
             "-i", "data/frames/img%04d.png",
             "-vcodec", "libx264",

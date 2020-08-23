@@ -2,8 +2,10 @@
 use crate::nbody::bodies::{Body2D, Body3D};
 
 // Constants
-pub const EPSILON: f32 = 2e-2;
-pub const EPSILON_SQRD: f32 = EPSILON * EPSILON;
+// pub const EPSILON: f32 = 2e-2;
+// pub const EPSILON_SQRD: f32 = EPSILON * EPSILON;
+pub const MIN_DIST: f32 = 10.;
+pub const MIN_DIST_SQRD: f32 = MIN_DIST * MIN_DIST;
 
 /// Class defining the simulation for 2D n-body problem.
 pub struct NBodySimulation2D {

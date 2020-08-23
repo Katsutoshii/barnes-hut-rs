@@ -1,5 +1,5 @@
 use rand_distr::{Uniform, Distribution, Normal};
-use crate::nbody::simulation::{NBodySimulation2D, EPSILON_SQRD};
+use crate::nbody::simulation::{NBodySimulation2D};
 use crate::nbody::bodies::{Body2D};
 use std::f32::{consts::PI};
 

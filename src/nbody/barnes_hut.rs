@@ -1,10 +1,8 @@
 //! Barnes hut algorithm
-use crate::nbody::{NBodySimulation2D};
+use crate::nbody::{NBodySimulation2D, MIN_DIST_SQRD};
 use crate::quadtree::{MassQuadtree2D, BoundingBox2D};
 use std::f32;
 
-const EPSILON: f32 = 1e-3;
-const EPSILON_SQRD: f32 = EPSILON * EPSILON;
 
 /// Runs a single timestep of the simulation using the Barnes-Hut algorithm.
 pub fn nbody_barnes_hut_2d(sim: &mut NBodySimulation2D, dt: f32) {
@@ -21,7 +19,10 @@ pub fn nbody_barnes_hut_2d(sim: &mut NBodySimulation2D, dt: f32) {
             let dx: f32 = sim.rx[j] - sim.rx[i];
             let dy: f32 = sim.ry[j] - sim.ry[i];
             let d_sqrd: f32 = dx * dx + dy * dy;
-            let inv_d_cubed: f32 = 1. / (d_sqrd + EPSILON_SQRD).powf(3.);
+            if d_sqrd < MIN_DIST_SQRD || d_sqrd < MIN_DIST_SQRD * sim.m[j].ln()  {
+                continue;
+            }
+            let inv_d_cubed: f32 = 1. / d_sqrd.powf(3.);
 
             sim.ax[i] += sim.m[j] * dx * inv_d_cubed;
             sim.ay[i] += sim.m[j] * dy * inv_d_cubed;

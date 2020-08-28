@@ -10,6 +10,7 @@ pub const WIDTH: u32 = 500;
 pub const HEIGHT: u32 = 500;
 
 /// Class defining the simulation for 2D n-body problem.
+#[derive(Debug)]
 pub struct NBodySimulation2D {
     pub n: usize,
     pub m: Vec<f32>,

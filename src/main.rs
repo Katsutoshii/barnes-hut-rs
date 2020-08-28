@@ -13,16 +13,16 @@ mod nbody;
 mod quadtree;
 
 use nbody::{
+    Body2D,
     load_bodies_2d,
     NBodySimulation2D,
     nbody_direct_2d,
     nbody_barnes_hut_2d,
-    create_plot,
-    compile_mp4,
     generate_galaxy,
     maintain_bounds,
     HEIGHT,
-    WIDTH};
+    WIDTH,
+    CENTER};
 
 const STAR_WIDTH: f64 = 2.;
 
@@ -46,7 +46,7 @@ impl App<'_> {
             clear(BLACK, gl);
 
             // Plot all points
-            for i in 0..sim.n {
+            for i in 1..sim.n {
                 let transform = c
                     .transform
                     .trans(sim.rx[i] as f64, sim.ry[i] as f64)
@@ -58,14 +58,15 @@ impl App<'_> {
 
     fn update(&mut self, args: &UpdateArgs) {
         // Rotate 2 radians per second.
-        nbody_direct_2d(self.sim, 0.1);
+        // nbody_direct_2d(self.sim, 0.1);
+        nbody_barnes_hut_2d(self.sim, 0.1, 10.);
         maintain_bounds(self.sim);
     }
 }
 
 fn main() {
     // Init the simulation
-    let mut sim: NBodySimulation2D = generate_galaxy(300);
+    let mut sim: NBodySimulation2D = generate_galaxy(1000);
 
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;

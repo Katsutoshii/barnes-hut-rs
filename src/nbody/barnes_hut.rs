@@ -25,7 +25,7 @@ pub fn nbody_barnes_hut_2d(sim: &mut NBodySimulation2D, dt: f32, theta: f32) {
             let dx: f32 = node.x - sim.rx[i];
             let dy: f32 = node.y - sim.ry[i];
             let d_sqrd: f32 = dx * dx + dy * dy;
-            if d_sqrd < MIN_DIST_SQRD || d_sqrd < MIN_DIST_SQRD * node.m.ln()  {
+            if d_sqrd < MIN_DIST_SQRD {
                 continue;
             }
             let inv_d_cubed: f32 = 1. / d_sqrd.powf(3.);

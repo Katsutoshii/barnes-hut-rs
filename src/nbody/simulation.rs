@@ -4,7 +4,7 @@ use crate::nbody::bodies::{Body2D, Body3D};
 // Constants
 // pub const EPSILON: f32 = 2e-2;
 // pub const EPSILON_SQRD: f32 = EPSILON * EPSILON;
-pub const MIN_DIST: f32 = 12.;
+pub const MIN_DIST: f32 = 10.;
 pub const MIN_DIST_SQRD: f32 = MIN_DIST * MIN_DIST;
 pub const WIDTH: u32 = 500;
 pub const HEIGHT: u32 = 500;

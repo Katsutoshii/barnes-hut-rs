@@ -13,7 +13,7 @@ pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
             let dx: f32 = sim.rx[j] - sim.rx[i];
             let dy: f32 = sim.ry[j] - sim.ry[i];
             let d_sqrd: f32 = dx * dx + dy * dy;
-            if d_sqrd < MIN_DIST_SQRD || d_sqrd < MIN_DIST_SQRD * sim.m[j].log10() {
+            if d_sqrd < MIN_DIST_SQRD {
                 continue;
             }
 

@@ -1,68 +1,88 @@
 use rand_distr::{Uniform, Distribution, Normal};
-use crate::nbody::simulation::{NBodySimulation2D, HEIGHT, WIDTH, MIN_DIST_SQRD};
-use crate::nbody::bodies::{Body2D};
 use std::f32::{consts::PI};
+use super::simulation::{NBodySimulation3D, HEIGHT, WIDTH, MIN_DIST_SQRD};
+use super::bodies::{Scalar, Vector, Vector3D, MovingBody3D};
 
-pub const CENTER: Body2D = Body2D {
-    rx: (WIDTH / 2) as f32,
-    ry: (HEIGHT / 2) as f32,
-    vx: 0.,
-    vy: 0.,
-    m: 5e6
+/// Constant center of galaxy.
+pub const CENTER: MovingBody3D = MovingBody3D {
+    r: Vector3D {
+        x: (WIDTH / 2) as Scalar,
+        y: (HEIGHT / 2) as Scalar,
+        z: 0.,
+    },
+    v: Vector3D {
+        x: 0.,
+        y: 0.,
+        z: 0.,
+    },
+    m: 5e6,
 };
 
-pub fn generate_satelite() -> Body2D {
+// Generates a satelite around the galaxy center.
+pub fn generate_satelite() -> MovingBody3D {
     // Generate a randon polar coordinate and mass
     let mut rng = rand::thread_rng();
-    let uniform: Uniform<f32> = Uniform::new(0., 2. * PI);
-    let r_norm: Normal<f32> = Normal::new(1., 1.).unwrap();
-    let m_norm: Normal<f32> = Normal::new(1., 1.).unwrap();
+    let uniform: Uniform<Scalar> = Uniform::new(0., 2. * PI);
+    let r_norm: Normal<Scalar> = Normal::new(1., 1.).unwrap();
+    let m_norm: Normal<Scalar> = Normal::new(1., 1.).unwrap();
 
-    let theta: f32 = uniform.sample(&mut rng);
-    let mut r: f32 = r_norm.sample(&mut rng);
-    let mut m: f32 = m_norm.sample(&mut rng);
-    r = f32::min(30. * r.abs() + 20., 250.);
-    m = f32::min(m.abs() + 1e-2, 3.);
+    let theta: Scalar = uniform.sample(&mut rng);
+    let mut r: Scalar = r_norm.sample(&mut rng);
+    let mut m: Scalar = m_norm.sample(&mut rng);
+    r = Scalar::min(30. * r.abs() + 20., 250.);
+    m = Scalar::min(m.abs() + 1e-2, 3.);
 
     // Calculate position
-    let rx: f32 = r * theta.cos() + CENTER.rx;
-    let ry: f32 = r * theta.sin() + CENTER.ry;
+    let rx: Scalar = r * theta.cos() + CENTER.r.x;
+    let ry: Scalar = r * theta.sin() + CENTER.r.y;
     
     // Calculate velocity, which should increase with center's mass, the 
-    let dx: f32 = CENTER.rx - rx;
-    let dy: f32 = CENTER.ry - ry;
-    let d: f32 = (dx * dx + dy * dy).sqrt();
-    let s: f32 = 1.00025e0 * (CENTER.m).sqrt() / r / r;
+    let dx: Scalar = CENTER.r.x - rx;
+    let dy: Scalar = CENTER.r.y - ry;
+    let d: Scalar = (dx * dx + dy * dy).sqrt();
+    let s: Scalar = 1.00025e0 * (CENTER.m).sqrt() / r / r;
 
-    let vx: f32 = s * dy / d;
-    let vy: f32 = s * -dx / d;
+    let vx: Scalar = s * dy / d;
+    let vy: Scalar = s * -dx / d;
 
     // println!("m: {}, r: ({}, {}), v: ({}, {})", m, rx, ry, vx, vy);
-    Body2D { rx, ry, vx, vy, m }
+    MovingBody3D {
+        r: Vector3D {
+            x: rx,
+            y: ry,
+            z: 0.,
+        },
+        v: Vector3D {
+            x: vx,
+            y: vy,
+            z: 0.,
+        },
+        m,
+    }
 }
 
 /// Generates a simple galaxy
-pub fn generate_galaxy(n: usize) -> NBodySimulation2D {
-    let mut sim: NBodySimulation2D = NBodySimulation2D::empty(n);
+pub fn generate_galaxy(n: usize) -> NBodySimulation3D {
+    let mut sim: NBodySimulation3D = NBodySimulation3D::empty(n);
 
     // Initialize with supermassive object in middle
-    sim.push(&CENTER);
-    for _ in 0..(n - 1) {
-        sim.push(&generate_satelite());
+    sim.set(0, &CENTER);
+    for i in 1..n {
+        sim.set(i, &generate_satelite());
     }
     sim
 }
 
-pub fn maintain_bounds(sim: &mut NBodySimulation2D) {
+/// Respawns points that go out of bounds
+pub fn maintain_bounds(sim: &mut NBodySimulation3D) {
     // Check bounds for all except center (at index 0)
     for i in 1..sim.n {
-        let dx: f32 = CENTER.rx - sim.rx[i];
-        let dy: f32 = CENTER.ry - sim.ry[i];
-        let d_sqrd: f32 = dx * dx + dy * dy;
-        if sim.rx[i] < 0. ||
-            sim.rx[i] > WIDTH as f32 ||
-            sim.ry[i] < 0. ||
-            sim.ry[i] > HEIGHT as f32 ||
+        let d = CENTER.r - sim.r[i];
+        let d_sqrd: Scalar = d.l2_sqrd();
+        if sim.r[i].x < 0. ||
+            sim.r[i].x > WIDTH as Scalar ||
+            sim.r[i].y < 0. ||
+            sim.r[i].y > HEIGHT as Scalar ||
             d_sqrd < MIN_DIST_SQRD {
 
             sim.set(i, &generate_satelite());

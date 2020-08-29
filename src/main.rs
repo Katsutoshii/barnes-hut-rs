@@ -1,3 +1,4 @@
+//! Executable to run the simulation locally in a Piston GUI window.
 extern crate glutin_window;
 extern crate graphics;
 extern crate opengl_graphics;
@@ -9,37 +10,36 @@ use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
 
+mod vector;
 mod nbody;
 mod quadtree;
 
+use vector::{Scalar};
 use nbody::{
-    Body2D,
-    load_bodies_2d,
-    NBodySimulation2D,
-    nbody_direct_2d,
-    nbody_barnes_hut_2d,
-    generate_galaxy,
-    maintain_bounds,
-    HEIGHT,
-    WIDTH,
-    CENTER};
+    generate_galaxy, maintain_bounds, nbody_barnes_hut,
+    NBodySimulation3D, HEIGHT, WIDTH,
+};
 
+/// Width of stars in the GUI
 const STAR_WIDTH: f64 = 2.;
 
+/// Piston App for GUI
 pub struct App<'a> {
     gl: GlGraphics,                 // OpenGL drawing backend.
-    sim: &'a mut NBodySimulation2D,    // The simulation
+    sim: &'a mut NBodySimulation3D, // The simulation
 }
 
+/// Implementation of Piston App
 impl App<'_> {
+    /// Renders a frame of the simulation
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 0.0];
-        const WHITE7: [f32; 4] = [1.0, 1.0, 1.0, 0.7];
+        const BLACK: [Scalar; 4] = [0.0, 0.0, 0.0, 0.0];
+        const WHITE7: [Scalar; 4] = [1.0, 1.0, 1.0, 0.7];
 
         let square = rectangle::square(0.0, 0.0, STAR_WIDTH);
-        let sim = &mut self.sim; 
+        let sim = &mut self.sim;
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
@@ -49,30 +49,32 @@ impl App<'_> {
             for i in 1..sim.n {
                 let transform = c
                     .transform
-                    .trans(sim.rx[i] as f64, sim.ry[i] as f64)
+                    .trans(sim.r[i].x as f64, sim.r[i].y as f64)
                     .trans(-25.0, -25.0);
                 ellipse(WHITE7, square, transform, gl);
             }
         });
     }
 
-    fn update(&mut self, args: &UpdateArgs) {
+    /// Updates the simulation for one timestep.
+    fn update(&mut self, _args: &UpdateArgs) {
         // Rotate 2 radians per second.
-        // nbody_direct_2d(self.sim, 0.1);
-        nbody_barnes_hut_2d(self.sim, 0.1, 10.);
+        // nbody_direct(self.sim, 0.1);
+        nbody_barnes_hut(self.sim, 0.1, 10.);
         maintain_bounds(self.sim);
     }
 }
 
+/// Main routine
 fn main() {
     // Init the simulation
-    let mut sim: NBodySimulation2D = generate_galaxy(1000);
+    let mut sim: NBodySimulation3D = generate_galaxy(1000);
 
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;
 
     // Create an Glutin window.
-    let mut window: Window = WindowSettings::new("galaxy", [500, 500])
+    let mut window: Window = WindowSettings::new("galaxy", [WIDTH, HEIGHT])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()

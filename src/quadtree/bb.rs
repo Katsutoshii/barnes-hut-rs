@@ -1,25 +1,36 @@
 //! Defines a splitable bounding box
+use crate::vector::Scalar;
+
+/// Splitable bounding box in 2 dimensions.
 #[derive(Debug, Clone, Copy)]
 pub struct BoundingBox2D {
-    pub min_x: f32,
-    pub max_x: f32,
-    pub min_y: f32,
-    pub max_y: f32
+    pub min_x: Scalar,
+    pub max_x: Scalar,
+    pub min_y: Scalar,
+    pub max_y: Scalar
 }
 
+/// implementation for a splitable bounding box in 2 dimensions.
 impl BoundingBox2D {
-    pub fn cx(&self) -> f32 {
+    /// Gets the center X position of the bounding box.
+    pub fn cx(&self) -> Scalar {
         (self.max_x + self.min_x) / 2.
     }
 
-    pub fn cy(&self) -> f32 {
+    /// Gets the center Y position of the bounding box.
+    pub fn cy(&self) -> Scalar {
         (self.max_y + self.min_y) / 2.
     }
 
-    pub fn width(&self) -> f32 {
+    /// Gets the width of this bounding box (x direction).
+    pub fn width(&self) -> Scalar {
         self.max_x - self.min_x
     }
 
+    /// Gets the subquadtrant of this bounding box.
+    /// The quadtrant number must be between 0 and 3.
+    /// The LSB represents left (0) or right (1) in the x direction.
+    /// The MSB represents left (0) or right (1) in the y direction.
     pub fn child(&self, quadrant: usize) -> Self {
         match quadrant {
             0b00 => Self {

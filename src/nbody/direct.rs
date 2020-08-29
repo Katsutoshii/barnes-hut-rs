@@ -1,28 +1,41 @@
 //! Direct algorithm using all-pairs force accumulation
-use crate::nbody::{NBodySimulation2D, MIN_DIST_SQRD};
+use super::{NBodySimulation, MIN_DIST_SQRD};
+use crate::vector::{Scalar, Vector};
 use std::f32;
 
 
 /// Runs a single timestep of the simulation using the all-pairs calculation.
-pub fn nbody_direct_2d(sim: &mut NBodySimulation2D, dt: f32) {
+ #[allow(dead_code)]
+pub fn nbody_direct<V: Vector>(sim: &mut NBodySimulation<V>, dt: Scalar) {
     for i in 0..sim.n {
-        sim.ax[i] = 0.;
-        sim.ay[i] = 0.;
+        sim.a[i] = V::zero();
 
         for j in 0..sim.n {
-            let dx: f32 = sim.rx[j] - sim.rx[i];
-            let dy: f32 = sim.ry[j] - sim.ry[i];
-            let d_sqrd: f32 = dx * dx + dy * dy;
+            let d = sim.r[j] - sim.r[i];
+            let d_sqrd: Scalar = d.l2_sqrd();
             if d_sqrd < MIN_DIST_SQRD {
                 continue;
             }
 
             let inv_d_cubed: f32 = 1. / d_sqrd.powf(3.);
-
-            sim.ax[i] += sim.m[j] * dx * inv_d_cubed;
-            sim.ay[i] += sim.m[j] * dy * inv_d_cubed;
+            sim.a[i] += d * sim.m[j] * inv_d_cubed;
+            // println!("Delta A {:?}", d * sim.m[j] * inv_d_cubed);
+            // println!("m[j] {:?}", sim.m[j]);
         }
+        // println!();
     }
 
     sim.integrate(dt);
+}
+
+#[cfg(test)]
+mod test {
+    use crate::nbody::{generate_galaxy, NBodySimulation3D, nbody_direct};
+
+    #[test]
+    fn test_direct() {
+        // Init the simulation
+        let mut sim: NBodySimulation3D = generate_galaxy(10);
+        nbody_direct(&mut sim, 0.1);
+    }
 }

@@ -10,13 +10,12 @@ pub mod quadtree;
 
 pub use nbody::{CENTER, generate_galaxy, generate_satelite, nbody_direct, nbody_barnes_hut, NBodySimulation3D, Vector3D};
 
-pub const NUM_PARTICLES: usize = 5;
 pub static mut SIMULATION: NBodySimulation3D = NBodySimulation3D {
     r: vec![],
     v: vec![],
     a: vec![],
     m: vec![],
-    n: NUM_PARTICLES,
+    n: 0,
 };
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -42,10 +41,10 @@ fn bind_sim(
         a: &mut [f32],
         m: &mut [f32]) {
     unsafe {
-        SIMULATION.r = Vec::from_raw_parts(r.as_mut_ptr() as *mut Vector3D, NUM_PARTICLES, NUM_PARTICLES);
-        SIMULATION.v = Vec::from_raw_parts(v.as_mut_ptr() as *mut Vector3D, NUM_PARTICLES, NUM_PARTICLES);
-        SIMULATION.a = Vec::from_raw_parts(a.as_mut_ptr() as *mut Vector3D, NUM_PARTICLES, NUM_PARTICLES);
-        SIMULATION.m = Vec::from_raw_parts(m.as_mut_ptr(), NUM_PARTICLES, NUM_PARTICLES);
+        SIMULATION.r = Vec::from_raw_parts(r.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
+        SIMULATION.v = Vec::from_raw_parts(v.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
+        SIMULATION.a = Vec::from_raw_parts(a.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
+        SIMULATION.m = Vec::from_raw_parts(m.as_mut_ptr(), SIMULATION.n, SIMULATION.n);
     }
 }
 
@@ -53,11 +52,13 @@ fn bind_sim(
 /// Binds JS array pointer to simulation, then runs `generate_galaxy`.
 #[wasm_bindgen]
 pub fn init_simulation(
+        n: usize,
         r: &mut [f32],
         v: &mut [f32],
         a: &mut [f32],
         m: &mut [f32]) {
     unsafe {
+        SIMULATION.n = n;
         bind_sim(r, v, a, m);
         // Initialize with supermassive object in middle
         SIMULATION.set(0, &CENTER);

@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Josiah <joshikatsu@gmail.com>"]
 edition = "2018"
 categories = ["wasm"]
+description = "Galaxy simulation using the Barnes-Hut algorithm"
+license = "MIT License, Copyright (c) 2020 Josiah Putman and Angela He"
+repository = "https://github.com/Katsutoshii/barnes-hut-rs"
 
 [lib]
 crate-type = ["cdylib"]

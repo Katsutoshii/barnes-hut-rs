@@ -10,13 +10,9 @@ pub mod quadtree;
 
 pub use nbody::{CENTER, generate_galaxy, generate_satelite, nbody_direct, nbody_barnes_hut, NBodySimulation3D, Vector3D};
 
-pub static mut SIMULATION: NBodySimulation3D = NBodySimulation3D {
-    r: vec![],
-    v: vec![],
-    a: vec![],
-    m: vec![],
-    n: 0,
-};
+pub fn log(msg: &str) {
+    console::log_1(&JsValue::from_str(msg));
+}
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
@@ -36,15 +32,19 @@ pub fn get_wasm_memory() -> Result<JsValue, JsValue> {
 
 /// Bind the pointers from javascript
 fn bind_sim(
+        n: usize,
         r: &mut [f32],
         v: &mut [f32],
         a: &mut [f32],
-        m: &mut [f32]) {
+        m: &mut [f32]) -> NBodySimulation3D {
     unsafe {
-        SIMULATION.r = Vec::from_raw_parts(r.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.v = Vec::from_raw_parts(v.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.a = Vec::from_raw_parts(a.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.m = Vec::from_raw_parts(m.as_mut_ptr(), SIMULATION.n, SIMULATION.n);
+        NBodySimulation3D {
+            n,
+            r: Vec::from_raw_parts(r.as_mut_ptr() as *mut Vector3D, n, n),
+            v: Vec::from_raw_parts(v.as_mut_ptr() as *mut Vector3D, n, n),
+            a: Vec::from_raw_parts(a.as_mut_ptr() as *mut Vector3D, n, n),
+            m: Vec::from_raw_parts(m.as_mut_ptr(), n, n),
+        }
     }
 }
 
@@ -57,29 +57,33 @@ pub fn init_simulation(
         v: &mut [f32],
         a: &mut [f32],
         m: &mut [f32]) {
-    unsafe {
-        SIMULATION.n = n;
-        bind_sim(r, v, a, m);
-        // Initialize with supermassive object in middle
-        SIMULATION.set(0, &CENTER);
-        for i in 1..SIMULATION.n {
-            SIMULATION.set(i, &generate_satelite());
-        }
+    if n == 0 { return; }
+
+    log(&*format!("Initializing simulation with size {}", n));
+    let mut sim = bind_sim(n, r, v, a, m);
+
+    // Initialize with supermassive object in middle
+    sim.set(0, &CENTER);
+    for i in 1..sim.n {
+        sim.set(i, &generate_satelite());
     }
+
+    log("Initialization done.");
 }
 
 /// Runs a timestep of the simulation
 #[wasm_bindgen]
 pub fn run_timestep(
+    n: usize,
     r: &mut [f32],
     v: &mut [f32],
     a: &mut [f32],
     m: &mut [f32]
 ) {
-    unsafe {
-        bind_sim(r, v, a, m);
-        nbody_direct(&mut SIMULATION, 0.1)
-    }
+    log("Run timestep");
+    let mut sim = bind_sim(n, r, v, a, m);
+    nbody_direct(&mut sim, 0.1);
+    log("Run timestep done");
 }
 
 // This is like the `main` function, except for JavaScript.
@@ -91,6 +95,6 @@ pub fn main_js() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
     
     // Your code goes here!
-    console::log_1(&JsValue::from_str("Bye world!"));
+    log("Bye world!");
     Ok(())
 }

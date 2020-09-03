@@ -1,5 +1,5 @@
 //! Library for NBody simulation using the Barnes-Hut algorithm.
-use js_sys::WebAssembly;
+use js_sys::{WebAssembly, Float32Array};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::console;
@@ -9,6 +9,14 @@ pub mod nbody;
 pub mod quadtree;
 
 pub use nbody::{CENTER, generate_galaxy, generate_satelite, nbody_direct, nbody_barnes_hut, NBodySimulation3D, Vector3D};
+
+pub const MAX_PARTICLES: usize = 10000;
+pub const DIMENSION: usize = 3;
+
+pub static mut R: [f32; DIMENSION * MAX_PARTICLES] = [0.; DIMENSION * MAX_PARTICLES];
+pub static mut V: [f32; DIMENSION * MAX_PARTICLES] = [0.; DIMENSION * MAX_PARTICLES];
+pub static mut A: [f32; DIMENSION * MAX_PARTICLES] = [0.; DIMENSION * MAX_PARTICLES];
+pub static mut M: [f32; MAX_PARTICLES] = [0.; MAX_PARTICLES];
 
 pub static mut SIMULATION: NBodySimulation3D = NBodySimulation3D {
     r: vec![],
@@ -26,40 +34,12 @@ pub static mut SIMULATION: NBodySimulation3D = NBodySimulation3D {
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen]
-pub fn get_wasm_memory() -> Result<JsValue, JsValue> {
-    match wasm_bindgen::memory().dyn_into::<WebAssembly::Memory>() {
-        Ok(memory) => Ok(memory.buffer()),
-        Err(_) => Err(JsValue::from_str("Could not get memory")),
-    }
-}
-
-/// Bind the pointers from javascript
-fn bind_sim(
-        r: &mut [f32],
-        v: &mut [f32],
-        a: &mut [f32],
-        m: &mut [f32]) {
-    unsafe {
-        SIMULATION.r = Vec::from_raw_parts(r.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.v = Vec::from_raw_parts(v.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.a = Vec::from_raw_parts(a.as_mut_ptr() as *mut Vector3D, SIMULATION.n, SIMULATION.n);
-        SIMULATION.m = Vec::from_raw_parts(m.as_mut_ptr(), SIMULATION.n, SIMULATION.n);
-    }
-}
-
 /// Initializes the simulation.
 /// Binds JS array pointer to simulation, then runs `generate_galaxy`.
 #[wasm_bindgen]
-pub fn init_simulation(
-        n: usize,
-        r: &mut [f32],
-        v: &mut [f32],
-        a: &mut [f32],
-        m: &mut [f32]) {
+pub fn init_simulation(n: usize) {
     unsafe {
         SIMULATION.n = n;
-        bind_sim(r, v, a, m);
         // Initialize with supermassive object in middle
         SIMULATION.set(0, &CENTER);
         for i in 1..SIMULATION.n {
@@ -68,16 +48,15 @@ pub fn init_simulation(
     }
 }
 
+#[wasm_bindgen] pub fn get_r() -> Float32Array { unsafe { Float32Array::view(&R) } }
+#[wasm_bindgen] pub fn get_v() -> Float32Array { unsafe { Float32Array::view(&V) } }
+#[wasm_bindgen] pub fn get_a() -> Float32Array { unsafe { Float32Array::view(&A) } }
+#[wasm_bindgen] pub fn get_m() -> Float32Array { unsafe { Float32Array::view(&M) } }
+
 /// Runs a timestep of the simulation
 #[wasm_bindgen]
-pub fn run_timestep(
-    r: &mut [f32],
-    v: &mut [f32],
-    a: &mut [f32],
-    m: &mut [f32]
-) {
+pub fn run_timestep() {
     unsafe {
-        bind_sim(r, v, a, m);
         nbody_direct(&mut SIMULATION, 0.1)
     }
 }
@@ -89,6 +68,14 @@ pub fn main_js() -> Result<(), JsValue> {
     // It's disabled in release mode so it doesn't bloat up the file size.
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
+
+    unsafe {
+        SIMULATION.r = Vec::from_raw_parts(R.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
+        SIMULATION.v = Vec::from_raw_parts(V.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
+        SIMULATION.a = Vec::from_raw_parts(A.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
+        SIMULATION.m = Vec::from_raw_parts(M.as_mut_ptr(), MAX_PARTICLES, MAX_PARTICLES);
+        SIMULATION.n = 0;
+    }
     
     // Your code goes here!
     console::log_1(&JsValue::from_str("Bye world!"));

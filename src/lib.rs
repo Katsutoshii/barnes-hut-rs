@@ -9,6 +9,7 @@ pub mod nbody;
 pub mod quadtree;
 
 pub use nbody::{CENTER, generate_galaxy, generate_satelite, nbody_direct, nbody_barnes_hut, NBodySimulation3D, Vector3D};
+pub use vector::{Scalar};
 
 pub const MAX_PARTICLES: usize = 10000;
 pub const DIMENSION: usize = 3;
@@ -58,6 +59,16 @@ pub fn init_simulation(n: usize) {
 pub fn run_timestep() {
     unsafe {
         nbody_direct(&mut SIMULATION, 0.1)
+    }
+}
+
+/// Runs a timestep of the simulation
+#[wasm_bindgen]
+pub fn run_timestep_barnes_hut() {
+    let theta: Scalar = 5.0;
+    let dt: Scalar = 0.1;
+    unsafe {
+        nbody_barnes_hut(&mut SIMULATION, dt, theta)
     }
 }
 

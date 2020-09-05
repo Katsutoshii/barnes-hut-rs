@@ -6,8 +6,8 @@ use super::bodies::{Scalar, Vector, Vector3D, MovingBody3D};
 /// Constant center of galaxy.
 pub const CENTER: MovingBody3D = MovingBody3D {
     r: Vector3D {
-        x: (WIDTH / 2) as Scalar,
-        y: (HEIGHT / 2) as Scalar,
+        x: 0.,
+        y: 0.,
         z: 0.,
     },
     v: Vector3D {
@@ -76,13 +76,15 @@ pub fn generate_galaxy(n: usize) -> NBodySimulation3D {
 /// Respawns points that go out of bounds
 pub fn maintain_bounds(sim: &mut NBodySimulation3D) {
     // Check bounds for all except center (at index 0)
+    let half_width: Scalar = WIDTH as Scalar / 2.;
+    let half_height: Scalar = HEIGHT as Scalar / 2.;
     for i in 1..sim.n {
         let d = CENTER.r - sim.r[i];
         let d_sqrd: Scalar = d.l2_sqrd();
-        if sim.r[i].x < 0. ||
-            sim.r[i].x > WIDTH as Scalar ||
-            sim.r[i].y < 0. ||
-            sim.r[i].y > HEIGHT as Scalar ||
+        if sim.r[i].x < -half_width ||
+            sim.r[i].x > half_width ||
+            sim.r[i].y < -half_height ||
+            sim.r[i].y > half_height ||
             d_sqrd < MIN_DIST_SQRD {
 
             sim.set(i, &generate_satelite());

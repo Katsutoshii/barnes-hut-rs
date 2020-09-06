@@ -1,16 +1,13 @@
 //! Barnes hut algorithm
-use super::{NBodySimulation3D, HEIGHT, MIN_DIST_SQRD, WIDTH};
+use super::{NBodySimulation3D};
 use crate::vector::{Scalar, Vector, Vector3D};
 use crate::quadtree::{BoundingBox2D, MassQuadtree, MassQuadtreeIterator};
 
 /// Runs a single timestep of the simulation using the Barnes-Hut algorithm.
 pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) {
-    let bb: BoundingBox2D = BoundingBox2D {
-        min_x: 0.,
-        max_x: WIDTH as Scalar,
-        min_y: 0.,
-        max_y: HEIGHT as Scalar,
-    };
+    let (min_x, min_y) = sim.config.min_r.to_xy();
+    let (max_x, max_y) = sim.config.max_r.to_xy();
+    let bb: BoundingBox2D = BoundingBox2D { min_x, max_x, min_y, max_y, };
     let quadtree: MassQuadtree = MassQuadtree::new(&sim.r, &sim.m, bb);
     let boxed_quadtree = Box::new(quadtree);
 
@@ -31,7 +28,7 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
                 z: 0.,
             };
             let d_sqrd: Scalar = d.l2_sqrd();
-            if d_sqrd < MIN_DIST_SQRD {
+            if d_sqrd < sim.config.min_dist_sqrd {
                 continue;
             }
 
@@ -41,4 +38,30 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
     }
 
     sim.integrate(dt);
+}
+
+#[cfg(test)]
+mod test {
+    use crate::vector::{Scalar, Vector, Vector3D};
+    use crate::nbody::{NBodyConfig3D, NBodySimulation3D, MovingBody3D, generate_galaxy};
+    use super::{nbody_barnes_hut};
+
+    #[test]
+    fn test_direct() {
+        // Init the simulation
+        let min_dist: Scalar = 10.;
+        let min_r: Vector3D = Vector3D::from_xy(0., 0.);
+        let max_r: Vector3D = Vector3D::from_xy(500., 500.,);
+        let config = NBodyConfig3D::new(min_dist, min_r, max_r);
+        let mut sim: NBodySimulation3D = NBodySimulation3D::empty(10, config);
+        
+        // Center of galaxy.
+        let c: MovingBody3D = MovingBody3D {
+            r: Vector3D::from_xy(250., 250.),
+            v: Vector3D::zero(),
+            m: 5e6,
+        };
+        generate_galaxy(&mut sim, &c);
+        nbody_barnes_hut(&mut sim, 0.1, 2.);
+    }
 }

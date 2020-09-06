@@ -82,9 +82,27 @@ impl Vector for Vector3D {
             z: 0.
         }
     }
+    
+    fn from_xy(x: Scalar, y: Scalar) -> Self {
+        Self {
+            x,
+            y,
+            z: 0.
+        }
+    }
+
+    fn to_xy(self) -> (Scalar, Scalar) {
+        (self.x, self.y)
+    }
 
     fn l2_sqrd(self) -> Scalar {
         self.x * self.x + self.y * self.y + self.z * self.z
+    }
+
+    fn in_bounds(self, min: &Self, max: &Self) -> bool {
+        self.x >= min.x && self.x <= max.x &&
+        self.y >= min.y && self.y <= max.y &&
+        self.z >= min.z && self.z <= max.z
     }
 }
 
@@ -94,21 +112,9 @@ mod tests {
 
     #[test]
     fn test_add_assign() {
-        let mut v1 = Vector3D {
-            x: 1.,
-            y: 2.,
-            z: 3.,
-        };
-        let v2 = Vector3D {
-            x: 2.,
-            y: 4.,
-            z: 6.,
-        };
-        let v3 = Vector3D {
-            x: 3.,
-            y: 6.,
-            z: 9.,
-        };
+        let mut v1 = Vector3D { x: 1., y: 2., z: 3., };
+        let v2 = Vector3D { x: 2., y: 4., z: 6., };
+        let v3 = Vector3D { x: 3., y: 6., z: 9., };
 
         v1 += v2;
         assert_eq!(v1, v3);
@@ -116,16 +122,8 @@ mod tests {
 
     #[test]
     fn test_mul_assign() {
-        let mut v1 = Vector3D {
-            x: 1.,
-            y: 2.,
-            z: 3.,
-        };
-        let v3 = Vector3D {
-            x: 3.,
-            y: 6.,
-            z: 9.,
-        };
+        let mut v1 = Vector3D { x: 1., y: 2., z: 3., };
+        let v3 = Vector3D { x: 3., y: 6., z: 9., };
         let s: Scalar = 3.;
 
         v1 *= s;
@@ -134,18 +132,19 @@ mod tests {
 
     #[test]
     fn test_mul() {
-        let v1 = Vector3D {
-            x: 1.,
-            y: 2.,
-            z: 3.,
-        };
-        let v3 = Vector3D {
-            x: 3.,
-            y: 6.,
-            z: 9.,
-        };
+        let v1 = Vector3D { x: 1., y: 2., z: 3., };
+        let v3 = Vector3D { x: 3., y: 6., z: 9., };
         let s: Scalar = 3.;
 
         assert_eq!(v1 * s, v3);
+    }
+
+    #[test]
+    fn test_in_bounds() {
+        let min = Vector3D { x: 0., y: 0., z: 0., };
+        let max = Vector3D { x: 500., y: 500., z: 0., };
+        let r = Vector3D { x: 250., y: 250., z: 0., };
+
+        assert_eq!(r.in_bounds(&min, &max), true);
     }
 }

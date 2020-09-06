@@ -19,5 +19,8 @@ pub trait Vector:
         Sub<Output = Self> +
         SubAssign {
     fn zero() -> Self;
+    fn from_xy(x: Scalar, y: Scalar) -> Self;
+    fn to_xy(self) -> (Scalar, Scalar);
     fn l2_sqrd(self) -> Scalar;
+    fn in_bounds(self, min: &Self, max: &Self) -> bool;
 }

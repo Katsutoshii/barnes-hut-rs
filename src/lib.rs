@@ -78,6 +78,7 @@ pub fn init_simulation(n: usize) {
 #[wasm_bindgen] pub fn get_v() -> Float32Array { unsafe { Float32Array::view(&V) } }
 #[wasm_bindgen] pub fn get_a() -> Float32Array { unsafe { Float32Array::view(&A) } }
 #[wasm_bindgen] pub fn get_m() -> Float32Array { unsafe { Float32Array::view(&M) } }
+#[wasm_bindgen] pub fn get_num_blackhole() -> usize { unsafe { SIMULATION.config.num_blackholes } }
 
 /// Runs a timestep of the simulation
 #[wasm_bindgen]

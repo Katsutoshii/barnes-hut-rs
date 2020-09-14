@@ -1,23 +1,18 @@
 //! Library for NBody simulation using the Barnes-Hut algorithm.
-use js_sys::{Float32Array};
+use js_sys::Float32Array;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::console;
 
-pub mod vector;
 pub mod nbody;
 pub mod quadtree;
+pub mod vector;
 
 pub use nbody::{
-    generate_galaxy,
-    generate_satellite,
-    generate_blackhole,
-    nbody_direct,
-    nbody_barnes_hut,
-    MovingBody3D,
-    NBodySimulation3D,
-    NBodyConfig3D};
-pub use vector::{Vector, Vector3D, Scalar};
+    generate_blackhole, generate_galaxy, generate_satellite, nbody_barnes_hut, nbody_direct,
+    MovingBody3D, NBodyConfig3D, NBodySimulation3D,
+};
+pub use vector::{Scalar, Vector, Vector3D};
 
 pub const MAX_PARTICLES: usize = 10000;
 pub const DIMENSION: usize = 3;
@@ -40,14 +35,14 @@ pub static mut SIMULATION: NBodySimulation3D = NBodySimulation3D {
         min_r: Vector3D {
             x: -250.,
             y: -250.,
-            z: 0.
+            z: 0.,
         },
         max_r: Vector3D {
             x: 250.,
             y: 250.,
-            z: 0.
+            z: 0.,
         },
-    }
+    },
 };
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -74,28 +69,38 @@ pub fn init_simulation(n: usize) {
     }
 }
 
-#[wasm_bindgen] pub fn get_r() -> Float32Array { unsafe { Float32Array::view(&R) } }
-#[wasm_bindgen] pub fn get_v() -> Float32Array { unsafe { Float32Array::view(&V) } }
-#[wasm_bindgen] pub fn get_a() -> Float32Array { unsafe { Float32Array::view(&A) } }
-#[wasm_bindgen] pub fn get_m() -> Float32Array { unsafe { Float32Array::view(&M) } }
-#[wasm_bindgen] pub fn get_num_blackhole() -> usize { unsafe { SIMULATION.config.num_blackholes } }
-
-/// Runs a timestep of the simulation
 #[wasm_bindgen]
-pub fn run_timestep() {
-    unsafe {
-        nbody_direct(&mut SIMULATION, 0.1)
-    }
+pub fn get_r() -> Float32Array {
+    unsafe { Float32Array::view(&R) }
+}
+#[wasm_bindgen]
+pub fn get_v() -> Float32Array {
+    unsafe { Float32Array::view(&V) }
+}
+#[wasm_bindgen]
+pub fn get_a() -> Float32Array {
+    unsafe { Float32Array::view(&A) }
+}
+#[wasm_bindgen]
+pub fn get_m() -> Float32Array {
+    unsafe { Float32Array::view(&M) }
+}
+#[wasm_bindgen]
+pub fn get_num_blackhole() -> usize {
+    unsafe { SIMULATION.config.num_blackholes }
 }
 
 /// Runs a timestep of the simulation
 #[wasm_bindgen]
-pub fn run_timestep_barnes_hut() {
+pub fn run_timestep(dt: Scalar) {
+    unsafe { nbody_direct(&mut SIMULATION, dt) }
+}
+
+/// Runs a timestep of the simulation
+#[wasm_bindgen]
+pub fn run_timestep_barnes_hut(dt: Scalar) {
     let theta: Scalar = 2.0;
-    let dt: Scalar = 0.1;
-    unsafe {
-        nbody_barnes_hut(&mut SIMULATION, dt, theta)
-    }
+    unsafe { nbody_barnes_hut(&mut SIMULATION, dt, theta) }
 }
 
 /// Creates a black hole at the given position in world space
@@ -121,13 +126,24 @@ pub fn main_js() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
     unsafe {
-        SIMULATION.r = Vec::from_raw_parts(R.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
-        SIMULATION.v = Vec::from_raw_parts(V.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
-        SIMULATION.a = Vec::from_raw_parts(A.as_mut_ptr() as *mut Vector3D, MAX_PARTICLES, MAX_PARTICLES);
+        SIMULATION.r = Vec::from_raw_parts(
+            R.as_mut_ptr() as *mut Vector3D,
+            MAX_PARTICLES,
+            MAX_PARTICLES,
+        );
+        SIMULATION.v = Vec::from_raw_parts(
+            V.as_mut_ptr() as *mut Vector3D,
+            MAX_PARTICLES,
+            MAX_PARTICLES,
+        );
+        SIMULATION.a = Vec::from_raw_parts(
+            A.as_mut_ptr() as *mut Vector3D,
+            MAX_PARTICLES,
+            MAX_PARTICLES,
+        );
         SIMULATION.m = Vec::from_raw_parts(M.as_mut_ptr(), MAX_PARTICLES, MAX_PARTICLES);
         SIMULATION.n = 0;
     }
-    
     // Your code goes here!
     console::log_1(&JsValue::from_str("Bye world!"));
     Ok(())

@@ -9,6 +9,7 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
     let (max_x, max_y) = sim.config.max_r.to_xy();
     let bb: BoundingBox2D = BoundingBox2D { min_x, max_x, min_y, max_y, };
     let quadtree: MassQuadtree = MassQuadtree::new(&sim.r, &sim.m, bb);
+    println!("\n\nQuadtree: {:?}", quadtree);
     let boxed_quadtree = Box::new(quadtree);
 
     // For each point
@@ -21,7 +22,6 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
 
         // Get all points that are close enough to treat as individuals
         for node in quadtree_iter {
-            // println!("Node: ({}, {}, {})", node.x, node.y, node.m);
             let d = Vector3D {
                 x: node.x - sim.r[i].x,
                 y: node.y - sim.r[i].y,
@@ -32,9 +32,12 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
                 continue;
             }
 
+            if i == 0 { println!("Node: ({}, {}, {})", node.x, node.y, node.m); }
+
             let inv_d_cubed: Scalar = 1. / d_sqrd.powf(3.);
             sim.a[i] += d * node.m * inv_d_cubed;
         }
+        if i == 0 { println!(); }
     }
 
     sim.integrate(dt);
@@ -47,7 +50,7 @@ mod test {
     use super::{nbody_barnes_hut};
 
     #[test]
-    fn test_direct() {
+    fn test_barnes_hut() {
         // Init the simulation
         let min_dist: Scalar = 10.;
         let min_r: Vector3D = Vector3D::from_xy(0., 0.);

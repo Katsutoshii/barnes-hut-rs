@@ -1,6 +1,7 @@
 //! Quadtree that keeps track of centers of mass.
 use super::BoundingBox2D;
 use crate::vector::{Scalar, Vector3D};
+const EPSILON: Scalar = 0.0001;
 
 /// Computes the l2 norm of a 2d vector represented by x1, y1, x2, y2
 fn l2(x1: Scalar, y1: Scalar, x2: Scalar, y2: Scalar) -> Scalar {
@@ -65,8 +66,16 @@ impl MassQuadtree {
         let cx: Scalar = bb.cx();
         let cy: Scalar = bb.cy();
         let mut points: Vec<(Scalar, Scalar, Scalar)> = vec![(x, y, m)];
+
+        // Insert the parent into itself for leaves
         if self.is_leaf() {
-            points.push((self.x, self.y, self.m));
+            // Only insert separate points if parent + child aren't too close
+            if (self.x - x).abs() > EPSILON && (self.y - y).abs() > EPSILON {
+                points.push((self.x, self.y, self.m));
+            } else {
+                // When too close, just insert the sum of the two points
+                points[0] = ((x + self.x) / 2., (y + self.y) / 2., m + self.m);
+            }
         }
 
         for &(x, y, m) in points.iter() {
@@ -170,11 +179,13 @@ fn test_quadtree() {
     // Initialize the particles
     let r: Vec<Vector3D> = vec![
         Vector3D { x: 100., y: 100., z: 0. },
+        Vector3D { x: 100., y: 100., z: 0. },
         Vector3D { x: 300., y: 300., z: 0. },
         Vector3D { x: 400., y: 400., z: 0. },
     ];
     // And their masses
     let m: Vec<Scalar> = vec![
+        10.,
         10.,
         30.,
         10.,

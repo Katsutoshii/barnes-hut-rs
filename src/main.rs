@@ -84,7 +84,7 @@ impl App<'_> {
     /// Updates the simulation for one timestep.
     fn update(&mut self, _args: &UpdateArgs) {
         // nbody_direct(self.sim, 0.1);
-        nbody_barnes_hut(self.sim, 0.1, 2.);
+        nbody_barnes_hut(self.sim, 0.1, 1.);
     }
 
     fn click(&mut self, mouse_xy: &[f64; 2]) {

@@ -1,7 +1,8 @@
 //! Quadtree that keeps track of centers of mass.
 use super::BoundingBox2D;
 use crate::vector::{Scalar, Vector3D};
-const EPSILON: Scalar = 0.0001;
+
+const EPSILON: Scalar = 1e-4;
 
 /// Computes the l2 norm of a 2d vector represented by x1, y1, x2, y2
 fn l2(x1: Scalar, y1: Scalar, x2: Scalar, y2: Scalar) -> Scalar {
@@ -21,7 +22,7 @@ pub struct MassQuadtree {
 
 /// Implementation for the mass quadtree
 impl MassQuadtree {
-    /// Constructs a child with no children.
+    /// Constructs a child with no children
     pub fn empty() -> Self {
         Self {
             x: 0.,
@@ -30,74 +31,86 @@ impl MassQuadtree {
             children: vec![None, None, None, None]
         }
     }
+
+    // Constructs a new child under a node
+    pub fn new_child(&mut self, quadrant: usize, x: Scalar, y: Scalar, m: Scalar) {
+        // println!("New child ({}, {}, {}) under ({}, {}, {}) in quad {}", x, y, m, self.x, self.y, self.m, quadrant);
+        self.children[quadrant] = Some(Box::new(Self {
+            x,
+            y,
+            m,
+            children: vec![None, None, None, None]
+        }))
+    }
     
     /// Constructs a quadtree for the given bounds and list of points
     pub fn new(r: &Vec<Vector3D>, m: &Vec<Scalar>, bb: BoundingBox2D) -> Self {
         let mut root = Self::empty();
         for i in 0..r.len() {
-            // println!();
             root.insert(r[i].x, r[i].y, m[i], bb);
         }
         root
     }
-    
-    /// Inserts into the quadtree according to the following procedure:
-    /// 
-    /// If node x does not contain a body, put the new body b here.
-    /// If node x is an internal node, update the center-of-mass and total mass of x.
-    /// Recursively insert the body b in the appropriate quadrant.
-    /// If node x is an external node, say containing a body named c,
-    /// then there are two bodies b and c in the same region.
-    /// Subdivide the region further by creating four children.
-    /// Then, recursively insert both b and c into the appropriate quadrant(s).
-    /// Since b and c may still end up in the same quadrant, there may be several subdivisions during a single insertion.
-    /// Finally, update the center-of-mass and total mass of x.
-    pub fn insert(&mut self, x: Scalar, y: Scalar, m: Scalar, bb: BoundingBox2D) {
-        // If no body in this node, insert this point.
-        if self.m == 0. {
-            self.x = x;
-            self.y = y;
-            self.m = m;
-            // println!("Free node found, inserted ({}, {}) into {:?}", x, y, bb);
-            return;
-        }
 
-        // Otherwise, insert the existing node and the new node under this parent.
-        let cx: Scalar = bb.cx();
-        let cy: Scalar = bb.cy();
-        let mut points: Vec<(Scalar, Scalar, Scalar)> = vec![(x, y, m)];
-
-        // Insert the parent into itself for leaves
-        if self.is_leaf() {
-            // Only insert separate points if parent + child aren't too close
-            if (self.x - x).abs() > EPSILON && (self.y - y).abs() > EPSILON {
-                points.push((self.x, self.y, self.m));
-            } else {
-                // When too close, just insert the sum of the two points
-                points[0] = ((x + self.x) / 2., (y + self.y) / 2., m + self.m);
-            }
-        }
-
-        for &(x, y, m) in points.iter() {
-            // Find the child and insert into it
-            let x_bit = (x >= cx) as usize;
-            let y_bit = (y >= cy) as usize;
-            let quadrant: usize = x_bit + (y_bit << 1);
-            // println!("Inserting ({}, {}, {}) into {:?}...", x, y, m, bb.child(quadrant));
-
-            if self.children[quadrant].is_none() {
-                self.children[quadrant] = Some(Box::new(Self::empty()));
-            }
-
-            let child: &mut Self = self.children[quadrant].as_mut().unwrap();
-            child.insert(x, y, m, bb.child(quadrant));
-        }
-        
-        // Update center of mass
+    // Updates the center of mass
+    pub fn update_com(&mut self, x: Scalar, y: Scalar, m: Scalar) {
         let total_m: Scalar = self.m + m;
         self.x = (self.m * self.x + m * x) / total_m;
         self.y = (self.m * self.y + m * y) / total_m;
         self.m = total_m;
+    }
+    
+    /// Inserts a point into the quadtree.
+    pub fn insert(&mut self, x: Scalar, y: Scalar, m: Scalar, bb: BoundingBox2D) {
+        // Edge cases: if inserting empty objects or inserting the first element of the tree
+        if m == 0. { return }
+        if self.m == 0. { self.x = x; self.y = y; self.m = m; return }
+
+        // Find the parent to insert this node under
+        let mut parent: &mut Self = self;
+        let mut parent_bb: BoundingBox2D = bb;
+        let mut quadrant: usize = parent_bb.quadrant(x, y);
+        while let Some(_) = &mut parent.children[quadrant] {
+            // Update the parent's center of mass
+            parent.update_com(x, y, m);
+
+            // Update the bounding box while searching for new parents deeper in the tree
+            parent_bb = parent_bb.child(quadrant);
+            parent = parent.children[quadrant].as_mut().unwrap();
+
+            // Compute quadrant for next ieration
+            quadrant = parent_bb.quadrant(x, y);
+        }
+
+        // Leaves must be re-inserted
+        if parent.is_leaf() {
+            let (px, py, pm) = (parent.x, parent.y, parent.m);
+
+            // Edge case: if the parent is too close to the child, don't insert as child
+            if (px - x).abs() < EPSILON && (py - y).abs() < EPSILON { return }
+
+            // Find the center of mass between the two
+            parent.update_com(x, y, m);
+            let (cx, cy, cm) = (parent.x, parent.y, parent.m);
+
+            // Then split until the parent and child are in separate cells
+            let mut parent_quadrant = parent_bb.quadrant(px, py);
+            while quadrant == parent_quadrant {
+                // Create the cell containing both
+                parent.new_child(quadrant, cx, cy, cm);
+                parent = parent.children[quadrant].as_mut().unwrap();
+
+                // Split the center and continue down
+                parent_bb = parent_bb.child(quadrant);
+                quadrant = parent_bb.quadrant(x, y);
+                parent_quadrant = parent_bb.quadrant(px, py);
+            }
+            // Once the quadrants are different, insert the parent into its quadrant
+            parent.new_child(parent_quadrant, px, py, pm);
+        }
+        
+        // Insert the new child in the correct quadrant
+        parent.new_child(quadrant, x, y, m);
     }
 
     /// Checks if this node is a leaf
@@ -152,15 +165,7 @@ impl<'a> Iterator for MassQuadtreeIterator<'a> {
             
             let d: Scalar = l2(node.x, node.y, self.x, self.y);
             let s: Scalar = bb.width();
-            if s / d < self.theta || node.is_leaf() {
-                if node.is_leaf() {
-                    // println!("Leaf node: ({}, {})", node.x, node.y);
-                } else {
-                    // println!("Node far enough away (s/d={}): ({}, {}) - ({}, {})",
-                    //     s / d, node.x, node.y, self.x, self.y);
-                }
-                return Some(node);
-            }
+            if s / d < self.theta || node.is_leaf() { return Some(node) }
             
             // If not far enough away, add children to the stack.
             for (quadrant, child) in node.children.iter().enumerate() {
@@ -176,19 +181,20 @@ impl<'a> Iterator for MassQuadtreeIterator<'a> {
 
 #[test]
 fn test_quadtree() {
+    // x: 265.56293, y: 263.4189, m: 0.4261353
+    // x: 250.0, y: 250.0, m: 5000000.0
+
     // Initialize the particles
     let r: Vec<Vector3D> = vec![
-        Vector3D { x: 100., y: 100., z: 0. },
-        Vector3D { x: 100., y: 100., z: 0. },
-        Vector3D { x: 300., y: 300., z: 0. },
-        Vector3D { x: 400., y: 400., z: 0. },
+        Vector3D { x: 265.56293, y: 263.4189, z: 0. },
+        Vector3D { x: 250.0, y: 250.0, z: 0. },
+        // Vector3D { x: 400., y: 400., z: 0. },
     ];
     // And their masses
     let m: Vec<Scalar> = vec![
-        10.,
-        10.,
-        30.,
-        10.,
+        0.4261353,
+        5000000.0
+        // 10.,
     ];
 
     // Create a quadtree in the bounding box (0,0),(500, 500)
@@ -199,7 +205,7 @@ fn test_quadtree() {
     // Pass the tree to the iterator in a box
     let boxed_quadtree = Box::new(quadtree);
     let theta: Scalar = 0.5;
-    let quadtree_iter = MassQuadtreeIterator::new(100., 100., theta, &boxed_quadtree, bb);
+    let quadtree_iter = MassQuadtreeIterator::new(250., 250., theta, &boxed_quadtree, bb);
 
     // Iterate over all contributing nodes of the tree
     for node in quadtree_iter {

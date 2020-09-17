@@ -24,7 +24,7 @@ use nbody::{
     nbody_barnes_hut,
     MovingBody3D,
     NBodyConfig3D,
-    NBodySimulation3D,
+    NBodySimulation3D
 };
 
 
@@ -116,6 +116,11 @@ fn main() {
         m: 5e6,
     };
     generate_galaxy(&mut sim, &c);
+
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // return;
 
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;

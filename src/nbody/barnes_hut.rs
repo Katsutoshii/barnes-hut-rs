@@ -9,7 +9,7 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
     let (max_x, max_y) = sim.config.max_r.to_xy();
     let bb: BoundingBox2D = BoundingBox2D { min_x, max_x, min_y, max_y, };
     let quadtree: MassQuadtree = MassQuadtree::new(&sim.r, &sim.m, bb);
-    println!("\n\nQuadtree: {:?}", quadtree);
+    // println!("\n\nQuadtree: {:?}", quadtree);
     let boxed_quadtree = Box::new(quadtree);
 
     // For each point
@@ -32,12 +32,12 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
                 continue;
             }
 
-            if i == 0 { println!("Node: ({}, {}, {})", node.x, node.y, node.m); }
+            // if i == 0 { println!("Node: ({}, {}, {})", node.x, node.y, node.m); }
 
             let inv_d_cubed: Scalar = 1. / d_sqrd.powf(3.);
             sim.a[i] += d * node.m * inv_d_cubed;
         }
-        if i == 0 { println!(); }
+        // if i == 0 { println!(); }
     }
 
     sim.integrate(dt);

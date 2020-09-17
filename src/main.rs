@@ -26,9 +26,6 @@ use nbody::{
     NBodyConfig3D,
     NBodySimulation3D
 };
-use quadtree::{
-    MassQuadtree, BoundingBox2D
-};
 
 
 /// Width of stars in the GUI
@@ -55,11 +52,6 @@ impl App<'_> {
         let blackhole_square = rectangle::square(0.0, 0.0, BLACKHOLE_WIDTH);
         let eventhorizon_square = rectangle::square(0.0, 0.0, EVENTHORIZON_WIDTH);
         let sim = &mut self.sim;
-        let quadtree: MassQuadtree = MassQuadtree::new(&sim.r, &sim.m, BoundingBox2D { 
-            min_x: 0.,
-            max_x: 500.,
-            min_y: 0.,
-            max_y: 500.});
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
@@ -92,7 +84,7 @@ impl App<'_> {
     /// Updates the simulation for one timestep.
     fn update(&mut self, _args: &UpdateArgs) {
         // nbody_direct(self.sim, 0.1);
-        nbody_barnes_hut(self.sim, 0.1, 2.);
+        nbody_barnes_hut(self.sim, 0.1, 1.);
     }
 
     fn click(&mut self, mouse_xy: &[f64; 2]) {
@@ -115,7 +107,7 @@ fn main() {
     let min_r: Vector3D = Vector3D::from_xy(0., 0.);
     let max_r: Vector3D = Vector3D::from_xy(500., 500.,);
     let config = NBodyConfig3D::new(min_dist, min_r, max_r);
-    let mut sim: NBodySimulation3D = NBodySimulation3D::empty(6, config);
+    let mut sim: NBodySimulation3D = NBodySimulation3D::empty(1000, config);
     
     // Center of galaxy.
     let c: MovingBody3D = MovingBody3D {
@@ -125,10 +117,10 @@ fn main() {
     };
     generate_galaxy(&mut sim, &c);
 
-    nbody_barnes_hut(&mut sim, 0.1, 2.);
-    nbody_barnes_hut(&mut sim, 0.1, 2.);
-    nbody_barnes_hut(&mut sim, 0.1, 2.);
-    return;
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // nbody_barnes_hut(&mut sim, 0.1, 2.);
+    // return;
 
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;

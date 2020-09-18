@@ -17,7 +17,7 @@ pub struct MassQuadtree {
     pub x: Scalar,
     pub y: Scalar,
     pub m: Scalar,
-    pub children: Vec<Option<Box<Self>>>,
+    pub children: Vec<Option<Self>>,
 }
 
 /// Implementation for the mass quadtree
@@ -35,12 +35,12 @@ impl MassQuadtree {
     // Constructs a new child under a node
     pub fn new_child(&mut self, quadrant: usize, x: Scalar, y: Scalar, m: Scalar) {
         // println!("New child ({}, {}, {}) under ({}, {}, {}) in quad {}", x, y, m, self.x, self.y, self.m, quadrant);
-        self.children[quadrant] = Some(Box::new(Self {
+        self.children[quadrant] = Some(Self {
             x,
             y,
             m,
             children: vec![None, None, None, None]
-        }))
+        })
     }
     
     /// Constructs a quadtree for the given bounds and list of points
@@ -129,25 +129,25 @@ pub struct MassQuadtreeIterator<'a> {
     x: Scalar,
     y: Scalar,
     theta: Scalar,
-    stack: Vec<(&'a Box<MassQuadtree>, BoundingBox2D)>
+    stack: Vec<(&'a MassQuadtree, BoundingBox2D)>
 }
 
 /// Implementation of the constructor for the mass quadtree iterator.
 impl<'a> MassQuadtreeIterator<'a> {
     /// Constructs a new iterator with the stack initialized to the root.
-    pub fn new(x: Scalar, y: Scalar, theta: Scalar, tree: &'a Box<MassQuadtree>, bb: BoundingBox2D) -> Self {
+    pub fn new(x: Scalar, y: Scalar, theta: Scalar, tree: &'a MassQuadtree, bb: BoundingBox2D) -> Self {
         Self {
             x,
             y,
             theta,
-            stack: vec![(&tree, bb)]
+            stack: vec![(tree, bb)]
         }
     }
 }
 
 /// Implements the iterator
 impl<'a> Iterator for MassQuadtreeIterator<'a> {
-    type Item = &'a Box<MassQuadtree>;
+    type Item = &'a MassQuadtree;
 
     /// Gets the next node that should count towards the force calculation for the current particle.
     /// 
@@ -159,7 +159,7 @@ impl<'a> Iterator for MassQuadtreeIterator<'a> {
     /// The parameter θ determines the accuracy of the simulation;
     /// larger values of θ increase the speed of the simulation but decreases its accuracy.
     /// If θ = 0, no internal node is treated as a single body and the algorithm degenerates to a direct-sum algorithm.
-    fn next(&mut self) -> Option<&'a Box<MassQuadtree>> {
+    fn next(&mut self) -> Option<&'a MassQuadtree> {
         while !self.stack.is_empty() {
             let (node, bb) = self.stack.pop()?;
             
@@ -203,9 +203,8 @@ fn test_quadtree() {
     println!("Tree: {:?}", quadtree);
 
     // Pass the tree to the iterator in a box
-    let boxed_quadtree = Box::new(quadtree);
     let theta: Scalar = 0.5;
-    let quadtree_iter = MassQuadtreeIterator::new(250., 250., theta, &boxed_quadtree, bb);
+    let quadtree_iter = MassQuadtreeIterator::new(250., 250., theta, &quadtree, bb);
 
     // Iterate over all contributing nodes of the tree
     for node in quadtree_iter {

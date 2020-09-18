@@ -10,7 +10,6 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
     let bb: BoundingBox2D = BoundingBox2D { min_x, max_x, min_y, max_y, };
     let quadtree: MassQuadtree = MassQuadtree::new(&sim.r, &sim.m, bb);
     // println!("\n\nQuadtree: {:?}", quadtree);
-    let boxed_quadtree = Box::new(quadtree);
 
     // For each point
     for i in 0..sim.n {
@@ -18,7 +17,7 @@ pub fn nbody_barnes_hut(sim: &mut NBodySimulation3D, dt: Scalar, theta: Scalar) 
         // println!("r[i] = ({}, {})", sim.rx[i], sim.ry[i]);
 
         let quadtree_iter =
-            MassQuadtreeIterator::new(sim.r[i].x, sim.r[i].y, theta, &boxed_quadtree, bb);
+            MassQuadtreeIterator::new(sim.r[i].x, sim.r[i].y, theta, &quadtree, bb);
 
         // Get all points that are close enough to treat as individuals
         for node in quadtree_iter {

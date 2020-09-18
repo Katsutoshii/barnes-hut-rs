@@ -27,6 +27,13 @@ impl BoundingBox2D {
         self.max_x - self.min_x
     }
 
+    // Returns the quadtrant of a point
+    pub fn quadrant(&self, x: Scalar, y: Scalar) -> usize {
+        let x_bit = (x >= self.cx()) as usize;
+        let y_bit = (y >= self.cy()) as usize;
+        x_bit + (y_bit << 1)
+    }
+
     /// Gets the subquadtrant of this bounding box.
     /// The quadtrant number must be between 0 and 3.
     /// The LSB represents left (0) or right (1) in the x direction.

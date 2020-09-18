@@ -116,6 +116,9 @@ impl<V: Vector> NBodySimulation<V> {
 
             // Check for out of bounds
             if !self.r[i].in_bounds(&self.config.min_r, &self.config.max_r) {
+                // Don't reset if there are no black holes
+                if self.config.num_blackholes > 0 { continue }
+
                 // Pick a random black hold to put next to
                 let ci = rng.gen_range(0, self.config.num_blackholes);
                 self.reset(i, ci);

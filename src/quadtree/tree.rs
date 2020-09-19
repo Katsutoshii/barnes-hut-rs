@@ -62,7 +62,8 @@ impl MassQuadtree {
     
     /// Inserts a point into the quadtree.
     pub fn insert(&mut self, x: Scalar, y: Scalar, m: Scalar, bb: BoundingBox2D) {
-        // Edge cases: if inserting empty objects or inserting the first element of the tree
+        // Edge cases: if inserting empty objects, first element, or out of bounds element
+        if x > bb.max_x || x < bb.min_x || y > bb.max_y || y < bb.min_y { return }
         if m == 0. { return }
         if self.m == 0. { self.x = x; self.y = y; self.m = m; return }
 

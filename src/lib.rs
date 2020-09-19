@@ -98,8 +98,7 @@ pub fn run_timestep(dt: Scalar) {
 
 /// Runs a timestep of the simulation
 #[wasm_bindgen]
-pub fn run_timestep_barnes_hut(dt: Scalar) {
-    let theta: Scalar = 2.0;
+pub fn run_timestep_barnes_hut(dt: Scalar, theta: Scalar) {
     unsafe { nbody_barnes_hut(&mut SIMULATION, dt, theta) }
 }
 

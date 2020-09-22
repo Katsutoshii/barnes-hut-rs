@@ -143,7 +143,5 @@ pub fn main_js() -> Result<(), JsValue> {
         SIMULATION.m = Vec::from_raw_parts(M.as_mut_ptr(), MAX_PARTICLES, MAX_PARTICLES);
         SIMULATION.n = 0;
     }
-    // Your code goes here!
-    console::log_1(&JsValue::from_str("Bye world!"));
     Ok(())
 }

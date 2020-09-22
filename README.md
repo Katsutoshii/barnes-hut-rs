@@ -2,6 +2,11 @@
 
 Implementation of the Barnes-Hut and direct algorithms in Rust.
 
+<div align="center">
+<img src="https://github.com/Katsutoshii/barnes-hut-frontend/raw/master/1.gif">
+<img src="https://github.com/Katsutoshii/barnes-hut-frontend/raw/master/2.gif">
+</div>
+
 ## Running the project
 
 Assuming you have `cargo` installed along with the rest of the `rustup` toolchain, run the following to run the simulation locally.

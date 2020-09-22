@@ -20,7 +20,7 @@ The Barnes-Hut algorithm notices that while the exact solution is expensive to c
 This grouping is achieved by a quadtree (works for 2D, an octree is required for 3D) that maintains the center of mass for each node.
 When computing the force on each body, the tree is traversed from the root, only taking into account child nodes that are within a threshold distance.
 
-For full details on the Barnes-Hut algorithm, see the [wikipedia article](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation);
+For full details on the Barnes-Hut algorithm, see the [wikipedia article](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation).
 
 ## Efficient quadtree implementation
 

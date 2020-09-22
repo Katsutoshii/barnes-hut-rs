@@ -1,6 +1,6 @@
 # barnes-hut-rs
 
-Implementation of the Barnes-Hut Algorithm in Rust.
+Implementation of the Barnes-Hut and direct algorithms in Rust.
 
 ## Running the project
 

@@ -1,7 +1,7 @@
 # barnes-hut-rs
 
 Implementation of the Barnes-Hut and direct algorithms in Rust.
-Web visualization at (galaxy-sim.github.io)[http://galaxy-sim.github.io/].
+Web visualization at [galaxy-sim.github.io](http://galaxy-sim.github.io/).
 
 <div align="center">
 <img src="https://github.com/Katsutoshii/barnes-hut-frontend/raw/master/1.gif">
